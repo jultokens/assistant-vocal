@@ -32,7 +32,7 @@ function startListening() {
     const text = event.results[0][0].transcript;
     document.getElementById("status").innerText = "Tu as dit : " + text;
 
-    const res = await fetch("https://9c36-2a02-8428-5e22-6e01-a1a5-9dcf-7756-58df.ngrok-free.app/chat", {
+    const res = await fetch("https://c089-2a02-8428-5e22-6e01-a1a5-9dcf-7756-58df.ngrok-free.app/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text }),
