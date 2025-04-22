@@ -1,170 +1,20 @@
-
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Assistant Vocal IA</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f7f9fc;
-      padding: 2rem;
-      color: #333;
-    }
-    h1 {
-      font-size: 1.8rem;
-      color: #1e88e5;
-    }
-    select, input[type="range"] {
-      padding: 0.5rem;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      width: 100%;
-    }
-    label {
-      font-weight: bold;
-      margin-top: 1rem;
-      display: block;
-    }
-    #startBtn {
-      margin-top: 2rem;
-      padding: 0.8rem 1.5rem;
-      background-color: #1e88e5;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      border-radius: 8px;
-    }
-    #result, #response {
-      margin-top: 1.5rem;
-      font-size: 1rem;
-    }
-    .box {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      max-width: 600px;
-      margin: auto;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <div class="box">
-    <h1>🧠 Assistant Vocal IA</h1>
-
-    <label for="voiceSelect">🎙️ Choisir une voix</label>
-    <select id="voiceSelect">
-      <option value="">Chargement...</option>
-    </select>
-
-    <label for="latency">🕒 Latence de réponse : <span id="latencyValue">500</span> ms</label>
-    <input type="range" id="latency" min="0" max="2000" step="100" value="500">
-
-    <button id="startBtn">▶️ Lancer l'assistant</button>
-
-    <div id="result"><strong>Tu as dit :</strong> <span></span></div>
-    <div id="response"><strong>IA :</strong> <span></span></div>
+  <div class="container">
+    <div id="bubble" class="bubble">🎤</div>
+    <p id="status">Clique pour parler</p>
+    <button id="stop">🛑 Arrêter la conversation</button>
   </div>
 
-  <script>
-    const startBtn = document.getElementById('startBtn');
-    const voiceSelect = document.getElementById('voiceSelect');
-    const latencySlider = document.getElementById('latency');
-    const latencyValue = document.getElementById('latencyValue');
-    const resultSpan = document.querySelector('#result span');
-    const responseSpan = document.querySelector('#response span');
-
-    let selectedVoice = null;
-    let isRunning = false;
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'fr-FR';
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    latencySlider.oninput = () => {
-      latencyValue.textContent = latencySlider.value;
-    };
-
-    function populateVoices() {
-      const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("fr"));
-      voiceSelect.innerHTML = '';
-      const filtered = voices.filter(v =>
-        /google|microsoft|fr/i.test(v.name)
-      ).slice(0, 4); // prendre les 4 premiers (2 femmes, 2 hommes)
-
-      filtered.forEach((voice, index) => {
-        const option = document.createElement("option");
-        option.value = voice.name;
-        option.textContent = `${voice.name}`;
-        if (index === 0) selectedVoice = voice;
-        voiceSelect.appendChild(option);
-      });
-
-      voiceSelect.onchange = () => {
-        selectedVoice = voices.find(v => v.name === voiceSelect.value);
-      };
-
-      selectedVoice = voices.find(v => v.name === voiceSelect.value);
-    }
-
-    speechSynthesis.onvoiceschanged = populateVoices;
-
-    startBtn.onclick = () => {
-      if (!isRunning) {
-        isRunning = true;
-        startBtn.textContent = "⏳ En cours...";
-        listen();
-      }
-    };
-
-    function listen() {
-      recognition.start();
-    }
-
-    recognition.onresult = (event) => {
-      const text = event.results[0][0].transcript;
-      resultSpan.textContent = text;
-
-      fetch("https://444d-2a02-8428-5e22-6e01-a1a5-9dcf-7756-58df.ngrok-free.app/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const response = data.choices?.[0]?.message?.content || "(aucune réponse)";
-        responseSpan.textContent = response;
-
-        const utterance = new SpeechSynthesisUtterance(response);
-        utterance.voice = selectedVoice;
-        utterance.lang = 'fr-FR';
-
-        // délai configurable pour la lecture
-        setTimeout(() => {
-          speechSynthesis.speak(utterance);
-        }, parseInt(latencySlider.value));
-
-        utterance.onend = () => {
-          setTimeout(() => {
-            listen();
-          }, 500);
-        };
-      })
-      .catch(err => {
-        responseSpan.textContent = "Erreur : " + err.message;
-        isRunning = false;
-        startBtn.textContent = "❌ Réessayer";
-      });
-    };
-
-    recognition.onerror = (event) => {
-      resultSpan.textContent = "Erreur micro : " + event.error;
-      isRunning = false;
-      startBtn.textContent = "❌ Erreur micro";
-    };
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
