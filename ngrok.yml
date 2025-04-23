@@ -1,0 +1,6 @@
+authtoken: ak_2w86IxlfpRllQ76YFJ4lDZt1VX5
+tunnels:
+  assistant:
+    proto: http
+    addr: 8080
+    domain: uniformly-native-sheep.ngrok-free.app
